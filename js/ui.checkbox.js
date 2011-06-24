@@ -167,8 +167,11 @@
             }
         },
 		
-        disable: function(){
-            this.element[0].disabled = true;
+        disable: function(status){
+			if(status === undefined){
+				status = true;
+			}
+            this.element[0].disabled = status;
             this.reflectUI({type: 'manuallydisabled'});
         },
 		
@@ -185,7 +188,7 @@
             if(e && e.type == 'click' && this.element[0].disabled){
 				return false;
 			}
-			this.element.attr({'checked': status});
+			this.element.attr({'checked': !!status});
             this.reflectUI(e || {
                 type: 'changecheckstatus'
             });
@@ -230,4 +233,21 @@
             
         }
     });
+	
+	
+	if($.propHooks){
+		var types = {radio: 1, checkbox: 1};
+		$.each({checked: 'changeCheckStatus', disabled: 'disable'}, function(name, fn){
+			//be hook friendly
+			if(!$.propHooks[name]){
+				$.propHooks[name] = {};
+			}
+			var oldSetHook = $.propHooks[name].set;
+			$.propHooks[name].set = function(elem, value){
+				var widget = $.data(elem, 'checkBox');
+				return ( (widget && widget[fn](!!value)) || (oldSetHook && oldSetHook(elem, value)) ) ;
+			};
+			
+		});
+	}
 })(jQuery);
