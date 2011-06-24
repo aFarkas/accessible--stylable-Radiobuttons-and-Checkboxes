@@ -3,6 +3,17 @@
  * @version 1.4.2
  */
 (function($){
+	
+	var supportsValidity;
+	(function(){
+		if(!$.prop || supportsValidity){return;}
+		var supportTest = function(){
+			supportsValidity = !!$('<input />').prop('validity');
+		};
+		supportTest();
+		$(supportTest);
+	})();
+	
     $.widget('ui.checkBox', {
 		options: {
 	        hideInput: true,
@@ -20,6 +31,9 @@
 				}
 				return false;
 			}
+			
+			this._proxiedReflectUI = $.proxy(this, 'reflectUI');
+			
             this.labels = $([]);
 			
             this.checkedStatus = false;
@@ -51,6 +65,8 @@
 				this.labels.addClass(this.radio ? 'ui-radio' : 'ui-checkbox');
 			}
 			
+			this.visualGroup = this.visualElement.add(this.labels);
+			
 			this._addEvents();
 			
 			this.initialized = true;
@@ -68,9 +84,9 @@
 					}
 					that.hover = (e.type == 'focus' || e.type == 'mouseenter');
 					if(e.type == 'focus'){
-						that.labels.add(that.visualElement).addClass(that.inputType +'-focused');
+						that.visualGroup.addClass(that.inputType +'-focused');
 					} else if(e.type == 'blur'){
-						that.labels.add(that.visualElement).removeClass(that.inputType +'-focused');
+						that.visualGroup.removeClass(that.inputType +'-focused');
 					}
 					that._changeStateClassChain();
 					return undefined;
@@ -78,7 +94,7 @@
 			;
 			
 			this.element
-				.bind('click.checkBox', $.proxy(this, 'reflectUI'))
+				.bind('click.checkBox invalid.checkBox', this._proxiedReflectUI)
 				.bind('focus.checkBox blur.checkBox', toggleHover)
 			;
 			if (opts.hideInput){
@@ -90,17 +106,16 @@
 				;
             }
 			if(opts.addVisualElement){
-					this.visualElement
-						.bind('mouseenter.checkBox mouseleave.checkBox', toggleHover)
-						.bind('click.checkBox', function(e){
-							that.element[0].click();
-							return false;
-						})
-					;
-				}
-			if(opts.addLabel){
-				this.labels.bind('mouseenter.checkBox mouseleave.checkBox', toggleHover);
+				this.visualElement
+					.bind('click.checkBox', function(e){
+						that.element[0].click();
+						return false;
+					})
+				;
 			}
+			
+			this.visualGroup.bind('mouseenter.checkBox mouseleave.checkBox', toggleHover);
+			
 		},
 		_changeStateClassChain: function(){
 			var allElements = this.labels.add(this.visualElement),
@@ -150,8 +165,7 @@
 				this.className = classes.join(' ');
 			}
 			
-			this.labels.each(switchStateClass);
-			this.visualElement.each(switchStateClass);
+			this.visualGroup.each(switchStateClass);
 		},
         destroy: function(onlyCss){
             this.element.removeClass('ui-helper-hidden-accessible');
@@ -188,7 +202,7 @@
             if(e && e.type == 'click' && this.element[0].disabled){
 				return false;
 			}
-			this.element.attr({'checked': !!status});
+			this.element[0].checked = !!status;
             this.reflectUI(e || {
                 type: 'changecheckstatus'
             });
@@ -199,7 +213,7 @@
 				if (this.radio && !_noGroupReflect) {
 					var elem = this.element[0];
 					//dynamic
-	                $('[name="'+ elem.name +'"]', elem.form || elem.ownerDocument).checkBox('reflectui', e, true);
+	                $('[name="'+ elem.name +'"]', elem.form || elem.ownerDocument).checkBox('reflectUI', e, true);
 						
 	            }
 	            return this._trigger(n, e, {
@@ -211,7 +225,11 @@
 			}
 			return undefined;
         },
-		
+		changeValidityState: function(){
+			if(supportsValidity){
+				this.visualGroup[ !this.element.prop('willValidate') || (this.element.prop('validity') || {valid: true}).valid ? 'removeClass' : 'addClass' ](this.inputType +'-invalid');
+			}
+		},
         reflectUI: function(e){
 			
             var oldChecked 			= this.checkedStatus, 
@@ -220,6 +238,7 @@
             					
 			this.disabledStatus = this.element.is(':disabled');
 			this.checkedStatus = this.element.is(':checked');
+			this.changeValidityState();
 			
 			if (this.disabledStatus != oldDisabledStatus || this.checkedStatus !== oldChecked) {
 				this._changeStateClassChain();
@@ -233,8 +252,7 @@
             
         }
     });
-	
-	
+		
 	if($.propHooks){
 		var types = {radio: 1, checkbox: 1};
 		$.each({checked: 'changeCheckStatus', disabled: 'disable'}, function(name, fn){
@@ -243,9 +261,13 @@
 				$.propHooks[name] = {};
 			}
 			var oldSetHook = $.propHooks[name].set;
+			
 			$.propHooks[name].set = function(elem, value){
 				var widget = $.data(elem, 'checkBox');
-				return ( (widget && widget[fn](!!value)) || (oldSetHook && oldSetHook(elem, value)) ) ;
+				if(widget){
+					widget[fn](!!value);
+				}
+				return oldSetHook && oldSetHook(elem, value) ;
 			};
 			
 		});
