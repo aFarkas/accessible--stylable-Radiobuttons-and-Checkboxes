@@ -1,15 +1,13 @@
 /**
  * @author alexander.farkas
- * @version 1.4.1
+ * @version 1.4.2
  */
 (function($){
-	var baseClasses = /ui-checkbox|ui-radio/;
     $.widget('ui.checkBox', {
 		options: {
 	        hideInput: true,
 			addVisualElement: true,
-			addLabel: true,
-			_delegated: false
+			addLabel: true
 	    },
         _create: function(){
             var that = this, 
@@ -17,9 +15,9 @@
 			;
 			
 			if(!this.element.is(':radio,:checkbox')){
-				if($.nodeName(this.element[0], 'input')){return false;}
-				this._addDelegate();
-				this.updateContainer();
+				if(this.element[0].elements && $.nodeName(this.element[0], 'form')){
+					$(this.element[0].elements).filter(':radio,:checkbox').checkBox(opts);
+				}
 				return false;
 			}
             this.labels = $([]);
@@ -28,104 +26,37 @@
 			this.disabledStatus = false;
 			this.hoverStatus = false;
             
-            this.radio = (this.element.is(':radio'));
+			this.inputType = this.element[0].type;
+            this.radio = this.inputType == 'radio';
 					
             this.visualElement = $([]);
             if (opts.hideInput) {
-				this.element
-					.addClass('ui-helper-hidden-accessible')
-				;
+				this.element.addClass('ui-helper-hidden-accessible');
 				if(opts.addVisualElement){
 					this.visualElement = $('<span />')
-						.addClass(this.radio ? 'ui-radio' : 'ui-checkbox')
+						.addClass('ui-'+this.inputType)
 					;
 					this.element.after(this.visualElement[0]);
 				}
             }
 			
 			if(opts.addLabel){
-				this.labels = $('label[for=' + this.element.attr('id') + ']')
-					.addClass(this.radio ? 'ui-radio' : 'ui-checkbox')
-				;
+				var id = this.element[0].id;
+				if(id){
+					this.labels = $('label[for="' + id + '"]', this.element[0].form || this.element[0].ownerDocument).add(this.element.parent('label'));
+				}
+				if(!this.labels[0]){
+					this.labels = this.element.closest('label', this.element[0].form);
+				}
+				this.labels.addClass(this.radio ? 'ui-radio' : 'ui-checkbox');
 			}
-			if(!opts._delegated){
-				this._addEvents();
-			}
+			
+			this._addEvents();
+			
 			this.initialized = true;
-            this.reflectUI({type: 'initialReflect'});
+            this.reflectUI({type: 'initialreflect'});
 			return undefined;
         },
-		updateContainer: function(){
-			if(!this.element.is(':radio,:checkbox') && !$.nodeName(this.element[0], 'input')){
-				$('input', this.element[0])
-					.filter(function(){
-						return !($.data(this, 'checkBox'));
-					})
-					.checkBox($.extend({}, this.options, {_delegated: true}))
-				;
-			}
-		},
-		_addDelegate: function(){
-			var opts 		= this.options,
-					
-				toggleHover = function(e, that){
-					if(!that){return;}
-					that.hover = !!(e.type == 'focus' || e.type == 'mouseenter' || e.type == 'focusin' || e.type == 'mouseover');
-					that._changeStateClassChain.call(that);
-					return undefined;
-				}
-			;
-			
-			
-			this.element
-				.bind('click', function(e){
-					if(!$.nodeName(e.target, 'input')){return;}
-					var inst = ($.data(e.target) || {}).checkBox;
-					if(!inst){return;}
-					inst.reflectUI.call(inst, e.target, e);
-				})
-				.bind('focusin.checkBox focusout.checkBox', function(e){
-					if(!$.nodeName(e.target, 'input')){return;}
-					var inst = ($.data(e.target) || {}).checkBox;
-					toggleHover(e, inst);
-				})
-			;
-			
-			if (opts.hideInput){
-				this.element
-					.bind('usermode', function(e){
-						if(!e.enabled){return;}
-						$('input', this).each(function(){
-		                    var inst = ($.data(this) || {}).checkBox;
-							(inst && inst.destroy.call(inst, true));
-						});
-	                })
-				;
-            }
-			
-			if(opts.addVisualElement){
-				this.element
-					.bind('mouseover.checkBox mouseout.checkBox', function(e){
-						if(!$.nodeName(e.target, 'span')){return;}
-						var inst = ( $.data($(e.target).prev()[0]) || {} ).checkBox;
-						toggleHover(e, inst);
-					})
-					.bind('click.checkBox', function(e){
-						if(!$.nodeName(e.target, 'span') || !baseClasses.test( e.target.className || '' )){return;}
-						$(e.target).prev()[0].click();
-						return false;
-					})
-				;
-			}
-			if(opts.addLabel){
-				this.element
-					.delegate('label.ui-radio, label.ui-checkbox', 'mouseenter.checkBox mouseleave.checkBox', function(e){
-						var inst = ( $.data(document.getElementById( $(this).attr('for') )) || {} ).checkBox;
-						toggleHover( e, inst );
-					});
-			}
-			
-		},
 		_addEvents: function(){
 			var that 		= this, 
 			
@@ -136,6 +67,11 @@
 						return false;
 					}
 					that.hover = (e.type == 'focus' || e.type == 'mouseenter');
+					if(e.type == 'focus'){
+						that.labels.add(that.visualElement).addClass(that.inputType +'-focused');
+					} else if(e.type == 'blur'){
+						that.labels.add(that.visualElement).removeClass(that.inputType +'-focused');
+					}
 					that._changeStateClassChain();
 					return undefined;
 				}
@@ -169,7 +105,7 @@
 		_changeStateClassChain: function(){
 			var allElements = this.labels.add(this.visualElement),
 				stateClass 	= '',
-				baseClass 	= 'ui-'+((this.radio) ? 'radio' : 'checkbox')
+				baseClass 	= 'ui-'+ this.inputType
 			;
 				
 			if(this.checkedStatus){
@@ -233,7 +169,7 @@
 		
         disable: function(){
             this.element[0].disabled = true;
-            this.reflectUI({type: 'manuallyDisabled'});
+            this.reflectUI({type: 'manuallydisabled'});
         },
 		
         enable: function(){
@@ -242,7 +178,7 @@
         },
 		
         toggle: function(e){
-            this.changeCheckStatus((this.element.is(':checked')) ? false : true, e);
+            this.changeCheckStatus(!(this.element.is(':checked')), e);
         },
 		
         changeCheckStatus: function(status, e){
@@ -251,17 +187,17 @@
 			}
 			this.element.attr({'checked': status});
             this.reflectUI(e || {
-                type: 'changeCheckStatus'
+                type: 'changecheckstatus'
             });
 			return undefined;
         },
-		
         propagate: function(n, e, _noGroupReflect){
-			if(!e || e.type != 'initialReflect'){
+			if(!e || e.type != 'initialreflect'){
 				if (this.radio && !_noGroupReflect) {
+					var elem = this.element[0];
 					//dynamic
-	                $(document.getElementsByName(this.element.attr('name')))
-						.checkBox('reflectUI', e, true);
+	                $('[name="'+ elem.name +'"]', elem.form || elem.ownerDocument).checkBox('reflectui', e, true);
+						
 	            }
 	            return this._trigger(n, e, {
 	                options: this.options,
@@ -286,7 +222,7 @@
 				this._changeStateClassChain();
 				
 				(this.disabledStatus != oldDisabledStatus &&
-					this.propagate('disabledChange', e));
+					this.propagate('disabledchange', e));
 				
 				(this.checkedStatus !== oldChecked &&
 					this.propagate('change', e));
