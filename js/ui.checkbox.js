@@ -254,7 +254,6 @@
     });
 		
 	if($.propHooks){
-		var types = {radio: 1, checkbox: 1};
 		$.each({checked: 'changeCheckStatus', disabled: 'disable'}, function(name, fn){
 			//be hook friendly
 			if(!$.propHooks[name]){

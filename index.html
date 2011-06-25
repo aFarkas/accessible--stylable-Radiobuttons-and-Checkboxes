@@ -111,6 +111,11 @@
 						.checkBox('reflectUI');
 					return false;
 				 });
+				 $('#native-prop').click(function(){
+					//native methods
+					$('#example input[type=radio]:eq(2)').prop({checked: true});
+					return false;
+				 });
 			});
         </script>
 		
@@ -201,6 +206,11 @@ $('#native').click(function(){
 		.checkBox('reflectUI');
 	return false;
 });
+$('#native-prop').click(function(){
+	//native methode prop (in case of jQuery 1.6 and higher and the prop method you won't need to reflect the state manually)
+	$('#example input[type=radio]:eq(2)').prop({checked: true});
+	return false;
+});
 </code>
 		<fieldset>
 			<div><input name="radio" id="c14" type="radio"/> <label for="c14">Radio 1</label></div>
@@ -210,6 +220,8 @@ $('#native').click(function(){
 		<div>
 			<button id="check-2">check second</button>
 			<button id="native">native methode + ui-reflection</button>
+			<button id="native-prop">only prop (check third)</button>
+			
 		</div>
 	</form>
 <table>
@@ -302,7 +314,8 @@ $('input:first').checkbox('changeCheckStatus', true);
 </code>
 <h2>Download &amp; Bugtracker</h2>
 <ul>
-	<li><a href="http://plugins.jquery.com/project/radiobutton-checkbox-replacement" target="_blank">ui.checkBox-Script</a></li>
+	<li><a href="https://github.com/aFarkas/accessible--stylable-Radiobuttons-and-Checkboxes/downloads" target="_blank">ui.checkBox-Script (download)</a></li>
+	<li><a href="https://github.com/aFarkas/accessible--stylable-Radiobuttons-and-Checkboxes/issues" target="_blank">ui.checkBox-Script (bugtracker)</a></li>
 	<li><a href="http://plugins.jquery.com/project/usermode" target="_blank">jquery.usermode-Script (optional)</a></li>
 </ul>
 
