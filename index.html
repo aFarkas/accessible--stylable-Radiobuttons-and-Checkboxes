@@ -225,6 +225,71 @@ $('#native-prop').click(function(){
 		</div>
 	</form>
 <table>
+	<caption>Configuration</caption>
+	<tr>
+		<th>option</th>
+		<th>description</th>
+	</tr>
+	<tr>
+		<td>replaceInput: [<strong>true</strong>|false]</td>
+		<td>hide original input-element</td>
+	</tr>
+	<tr>
+		<td>addLabel: [<strong>true</strong>|false]</td>
+		<td>add checkbox/radiobutton state-classes also to the label-element</td>
+	</tr>
+	<tr>
+		<td>addVisualElement: [<strong>true</strong>|false]</td>
+		<td>adds a span element as a replacement for the input element (if you turn this to false, you can still style the label-element) (<a href="label-only.html">see label-only demo</a></td>
+	</tr>
+</table>
+<code>
+$('input').checkbox({
+	addLabel: false
+});
+</code>
+
+<table>
+	<caption>Classes to style label/visual element</caption>
+	<thead>
+		<tr>
+			<th>class</th>
+			<th>description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>ui-radio/ui-checkbox</td>
+			<td>role style always attached</td>
+		</tr>
+	</tbody>
+	<tbody>
+		<tr>
+			<td>ui-radio-hover/ui-checkbox-hover</td>
+			<td>attached on mouseenter/focus and removed on mouseleave/blur</td>
+		</tr>
+		<tr>
+			<td>ui-radio-checked/ui-checkbox-checked</td>
+			<td>attached, if checked</td>
+		</tr>
+		<tr>
+			<td>ui-radio-disabled/ui-checkbox-disabled</td>
+			<td>attached if control is disabled</td>
+		</tr>
+	</tbody>
+	<tbody>
+		<tr>
+			<td>radio-focus/checkbox-focus</td>
+			<td>attached on focus and removed on blur</td>
+		</tr>
+		<tr>
+			<td>radio-invalid/checkbox-invalid</td>
+			<td>HTML5 validity test (works also in IE with <a href="http://afarkas.github.com/webshim/demos/index.html">webshims lib</a>)</td>
+		</tr>
+	<tbody>	
+</table>
+
+<table>
 	<caption>events</caption>
 	<tr>
 		<th>event</th>
@@ -255,30 +320,7 @@ $('input')
 	})
 ;
 </code>
-<table>
-	<caption>Configuration</caption>
-	<tr>
-		<th>option</th>
-		<th>description</th>
-	</tr>
-	<tr>
-		<td>replaceInput: [<strong>true</strong>|false]</td>
-		<td>hide original input-element</td>
-	</tr>
-	<tr>
-		<td>addLabel: [<strong>true</strong>|false]</td>
-		<td>add checkbox/radiobutton state-classes also to the label-element</td>
-	</tr>
-	<tr>
-		<td>addVisualElement: [<strong>true</strong>|false]</td>
-		<td>adds a span element as a replacement for the input element (if you turn this to false, you can still style the label-element) (<a href="label-only.html">see label-only demo</a></td>
-	</tr>
-</table>
-<code>
-$('input').checkbox({
-	addLabel: false
-});
-</code>
+
 <table>
 	<caption>extra-methods</caption>
 	<tr>

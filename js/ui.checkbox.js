@@ -238,7 +238,9 @@
             					
 			this.disabledStatus = this.element.is(':disabled');
 			this.checkedStatus = this.element.is(':checked');
-			this.changeValidityState();
+			if(!e || e.type !== 'initialreflect'){
+				this.changeValidityState();
+			}
 			
 			if (this.disabledStatus != oldDisabledStatus || this.checkedStatus !== oldChecked) {
 				this._changeStateClassChain();
