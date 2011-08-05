@@ -1,6 +1,6 @@
 /**
  * @author alexander.farkas
- * @version 1.4.3
+ * @version 1.4.4pre
  */
 (function($){
 	
@@ -63,6 +63,12 @@
 					this.labels = this.element.closest('label', this.element[0].form);
 				}
 				this.labels.addClass(this.radio ? 'ui-radio' : 'ui-checkbox');
+			}
+			
+			if($.webshims && $.webshims.addShadowDom){
+				$.webshims.addShadowDom(this.element, opts.addVisualElement ? this.visualElement[0] : this.labels[0], {
+					shadowFocusElement: this.element[0]
+				});
 			}
 			
 			this.visualGroup = this.visualElement.add(this.labels);
